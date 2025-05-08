@@ -1,4 +1,6 @@
 import java.io.IOException;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,15 +9,17 @@ public class MonitoringProcess
     private static final int CAMERAS = 6;
     private static final int DEFAULT_DURATION = 10;
     private static final int DEFAULT_FREQUENCY = 5;
+    private static final int MILLISECONDS = 1000;
     private static final String[] ZONES = {
             "Sótano", "Ático", "Cocina", "Dormitorio", "Jardín", "Mausoleo"
     };
 
     public static void main(String[] args) throws InterruptedException, IOException
     {
-        int duration = DEFAULT_DURATION;
-        int frequency = DEFAULT_FREQUENCY;
-        argumentsProcessing(args, duration, frequency);
+      
+        int[] values = argumentsProcessing(args);
+        int duration = values[0];
+        int frequency = values[1];
         List<Process> childProcesses = new ArrayList<>();
         System.out.println("\n########### Monitoreo iniciado #############");
         System.out.println("Duracion: " + duration + " segundos\nFrecuencia: " + frequency + " segundos");
@@ -26,8 +30,8 @@ public class MonitoringProcess
                             startProcess("CameraProcess",
                             String.valueOf(i),
                             ZONES[i],
-                            String.valueOf(duration * 1000),
-                            String.valueOf(frequency * 1000))
+                            String.valueOf(duration * MILLISECONDS),
+                            String.valueOf(frequency * MILLISECONDS))
                             );
         }
         for (Process child : childProcesses)
@@ -49,19 +53,20 @@ public class MonitoringProcess
         return processBuilder.inheritIO().start();
     }
 
-    public static void argumentsProcessing(String[] args, Integer duration, Integer frequency)
+    public static int[] argumentsProcessing(String[] args)
     {
+        int duration = DEFAULT_DURATION;
+        int frequency = DEFAULT_FREQUENCY;
         if (args.length < 2)
         {
-            System.out.println("No se proporcionaron suficientes argumentos. Se usarán los valores por defecto.");
-            System.out.println("Sintaxis de ejecución: java MonitoringProcess.java  <duration> <frequency>");
-            return;
+            System.out.println("Se usarán los valores por defecto.");
+            return new int[] { duration, frequency };
         }
         try
         {
             int dur = Integer.parseInt(args[0]);
             int freq = Integer.parseInt(args[1]);
-    
+
             if (dur <= 0 || freq <= 0)
             {
                 System.out.println("Frecuencia y duración deben ser números positivos. Se usarán los valores por defecto.");
@@ -70,7 +75,7 @@ public class MonitoringProcess
             {
                 System.out.println("La frecuencia no puede ser mayor que la duración. Se usarán los valores por defecto.");
             }
-            else 
+            else
             {
                 duration = dur;
                 frequency = freq;
@@ -81,6 +86,7 @@ public class MonitoringProcess
             System.out.println("Parámetros inválidos. Se usarán los valores por defecto.");
             System.out.println("Sintaxis de ejecución: java MonitoringProcess.java  <duration> <frequency>");
         }
+        return new int[] { duration, frequency };
     }
-    
+
 }
