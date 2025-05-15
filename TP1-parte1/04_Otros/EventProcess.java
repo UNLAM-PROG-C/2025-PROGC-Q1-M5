@@ -12,7 +12,7 @@ public class EventProcess {
     public static void main(String[] args) throws InterruptedException, IOException{
         int duration = Integer.parseInt(args[0]);
         int frecuencia = Integer.parseInt(args[1]);
-        String zonesPath = args[2]; // No lo parsees a int
+        String zonesPath = args[2];
 
         String[] zones = zonesPath.split(",");
 
