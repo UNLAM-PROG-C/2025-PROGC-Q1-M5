@@ -4,7 +4,8 @@ import java.io.IOException;
 public class CameraProcess
 {
     private static final int MILLISECONDS  = 1000;
-    public static void main(String[] args) throws IOException, InterruptedException{
+    public static void main(String[] args) throws IOException, InterruptedException
+    {
 
         int id = Integer.parseInt(args[0]);
         String zone = args[1];
