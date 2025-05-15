@@ -1,11 +1,15 @@
-public class ExplosionEffect {
+public class ExplosionEffect
+{
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) throws InterruptedException
+    {
         explosionEffect();
     }
 
-    public static void explosionEffect() throws InterruptedException {
-        String[] explosionFrames = {
+    public static void explosionEffect() throws InterruptedException
+    {
+        String[] explosionFrames =
+        {
             "             *             \n" +
             "            ***            \n" +
             "           *###*           \n" +
@@ -91,23 +95,29 @@ public class ExplosionEffect {
             "             *             "
         };
 
-        for (int i = 0; i < explosionFrames.length; i++) {
+        for (int i = 0; i < explosionFrames.length; i++)
+        {
             clearConsole();
             System.out.println(explosionFrames[i]);
             Thread.sleep(100);
         }
     }
 
-    public static void clearConsole() {
-        try {
-            if (System.getProperty("os.name").contains("Windows")) {
+    public static void clearConsole()
+    {
+        try
+            {
+            if (System.getProperty("os.name").contains("Windows"))
+            {
                 new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
-            } else {
+            } else
+            {
                 System.out.print("\033[H\033[2J");
                 System.out.flush();
             }
-        } catch (Exception e) {
+        } catch (Exception e)
+            {
             e.printStackTrace();
-        }
+            }
     }
 }
