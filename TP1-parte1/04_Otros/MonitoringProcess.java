@@ -3,20 +3,23 @@ import java.util.ArrayList;
 import java.util.List;
 import java.io.File;
 
-public class MonitoringProcess {
+public class MonitoringProcess
+{
 
     private static final int DEFAULT_cameras = 3;
     private static final int DEFAULT_DURATION = 10;
     private static final int DEFAULT_FREQUENCY = 5;
     private static final int REMOVE_FOLDERS_TIME = 10;
     private static final int MILLISECONDS  = 1000;
-    private static final String[] ZONES = {
+    private static final String[] ZONES =
+    {
         "Mansión Derceto", "Sótano", "Ático", "Cocina", "Dormitorio", "Jardín", "Mausoleo",
         "Museo Privado", "Cuarto de Servicio", "Zaguán", "Vestíbulo Principal", "Sala de Reliquias",
         "Archivo Secreto", "Despensa Antigua", "Laboratorio Oculto", "Sala de Tortura", "Puente Elevadizo"
     };
 
-    public static void main(String[] args) throws IOException, InterruptedException{
+    public static void main(String[] args) throws IOException, InterruptedException
+    {
         
         int[] values = argumentsProcessing(args);
         int cameras = values[0];
@@ -47,7 +50,8 @@ public class MonitoringProcess {
             );
         }
 
-        for (Process p : childProcess) {
+        for (Process p : childProcess)
+        {
             p.waitFor();
         }
 
