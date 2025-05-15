@@ -1,15 +1,18 @@
 import java.io.File;
 import java.io.IOException;
 
-public class EventProcess {
-    public static final String[] EVENTS = {
+public class EventProcess 
+{
+    public static final String[] EVENTS = 
+    {
         "Sin actividad",
         "Movimiento detectado",
         "Anomalía térmica",
         "Sombra extraña",
         "Ruido detectado"
     };
-    public static void main(String[] args) throws InterruptedException, IOException{
+    public static void main(String[] args) throws InterruptedException, IOException
+    {
         int duration = Integer.parseInt(args[0]);
         int frecuencia = Integer.parseInt(args[1]);
         String zonesPath = args[2];
@@ -25,7 +28,8 @@ public class EventProcess {
         {
             Thread.sleep(frecuencia);
             
-            for (String zona : zones) {
+            for (String zona : zones) 
+            {
 
                 int randomIndex = (int) (Math.random() * EVENTS.length);
                 String selectedEvent = EVENTS[randomIndex];

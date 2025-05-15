@@ -10,7 +10,8 @@ public class MonitoringProcess
     private static final int DEFAULT_DURATION = 10;
     private static final int DEFAULT_FREQUENCY = 5;
     private static final int MILLISECONDS = 1000;
-    private static final String[] ZONES = {
+    private static final String[] ZONES = 
+    {
             "Sótano", "Ático", "Cocina", "Dormitorio", "Jardín", "Mausoleo"
     };
 
@@ -60,7 +61,10 @@ public class MonitoringProcess
         if (args.length < 2)
         {
             System.out.println("Se usarán los valores por defecto.");
-            return new int[] { duration, frequency };
+            return new int[] 
+            { 
+                duration, frequency 
+            };
         }
         try
         {
@@ -86,7 +90,10 @@ public class MonitoringProcess
             System.out.println("Parámetros inválidos. Se usarán los valores por defecto.");
             System.out.println("Sintaxis de ejecución: java MonitoringProcess.java  <duration> <frequency>");
         }
-        return new int[] { duration, frequency };
+        return new int[] 
+        { 
+            duration, frequency 
+        };
     }
 
 }

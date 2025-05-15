@@ -18,7 +18,10 @@ struct Team
   int goals_for = 0;
   int goals_against = 0;
 
-  int GoalDifference() const { return goals_for - goals_against; }
+  int GoalDifference() const 
+{ 
+  return goals_for - goals_against; 
+}
 };
 
 struct Match
@@ -54,7 +57,10 @@ void GenerateSchedule(int num_teams)
       {
         away = num_teams - 1;
       }
-      matchday.push_back({home, away});
+      matchday.push_back(
+      {
+        home, away
+      });
     }
 
     schedule.push_back(matchday);
@@ -71,7 +77,10 @@ MatchResult SimulateMatch(const Match& match)
   std::this_thread::sleep_for(
   std::chrono::milliseconds(static_cast<int>(duration(gen))));
 
-  return {match.home_team, match.away_team, goals(gen), goals(gen)};
+  return 
+  {
+    match.home_team, match.away_team, goals(gen), goals(gen)
+  };
 }
 
 void ShowTable(const std::vector<Team>& current_teams)
@@ -223,7 +232,8 @@ void SimulateSequential()
   ShowTable(table);
 }
 
-int main() {
+int main() 
+{
   std::vector<std::string> team_names =
   {
       "River Plate",      "San Lorenzo",      "Ferro",

@@ -11,7 +11,8 @@ public class CameraProcess
         "Sombra extraña",
         "Ruido detectado"
     };
-    public static void main(String[] args) throws IOException, InterruptedException{
+    public static void main(String[] args) throws IOException, InterruptedException
+    {
 
         int id = Integer.parseInt(args[0]);
         String zone = args[1];
