@@ -85,7 +85,10 @@ public class MonitoringProcess
         if (args.length < 3)
         {
             System.out.println("Se usarán los valores por defecto.");
-            return new int[] {cameras,duration, frequency };
+            return new int[] 
+            {
+                cameras,duration, frequency 
+            };
         }
         try
         {
@@ -125,13 +128,17 @@ public class MonitoringProcess
             System.out.println("Parámetros inválidos. Se usarán los valores por defecto.");
             System.out.println("Sintaxis de ejecución: java MonitoringProcess.java <cameras> <duration> <frequency>");
         }
-        return new int[] { cameras, duration, frequency };
+        return new int[] 
+        { 
+            cameras, duration, frequency 
+        };
     }
 
     public static boolean deleteFolder(File folder)
     {
         File[] files = folder.listFiles();
-        if (files != null) {
+        if (files != null) 
+        {
             for (File file : files) 
             {
                 if (file.isDirectory())
