@@ -212,9 +212,6 @@ void seller()
 
         this_thread::sleep_for(chrono::milliseconds(SELLER_SERVICE_TIME_MS));
     }
-
-    cout << "\n=== Ventas finalizadas. Total bolsitas vendidas: "
-         << bags_sold << " ===\n";
 }
 
 // Clients
@@ -289,6 +286,9 @@ int main()
     t_baker.join();
     t_packer1.join();
     t_packer2.join();
+    
+    cout << "\n=== Ventas finalizadas. Total bolsitas vendidas: "
+         << bags_sold << " ===\n";
 
     return 0;
 }
