@@ -1,239 +1,193 @@
+
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.Random; 
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Random;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
-public class TruckOperations
-{
+public class TruckOperations {
 
-    private static Semaphore loadFlourSemaphore = new Semaphore(1);
-    private static Semaphore unloadFlourSemaphore = new Semaphore(1);
-    private static Semaphore loadCoalSemaphore = new Semaphore(1);
-    private static Semaphore unloadCoalSemaphore = new Semaphore(1);
-    private static Semaphore loadFuelSemaphore = new Semaphore(2);
+    private static final Semaphore loadFlourSemaphore = new Semaphore(1);
+    private static final Semaphore unloadFlourSemaphore = new Semaphore(1);
+    private static final Semaphore loadCoalSemaphore = new Semaphore(1);
+    private static final Semaphore unloadCoalSemaphore = new Semaphore(1);
+    private static final Semaphore loadFuelSemaphore = new Semaphore(2);
+
     private static Semaphore truckAvailable;
-    private final static Integer FLOURTRUCK = 0;
-    private final static Integer COALTRUCK = 1;
+    private static BlockingQueue<Integer> truckIds;
+
+    private static final int FLOURTRUCK = 0;
+    private static final int COALTRUCK = 1;
+    private static final int MILLISECONDS = 1000;
+
     private static int[] travels;
-    private static Integer MILLISECONDS = 1000;
 
-    public static void main(String[] args) throws InterruptedException
-    {
+    public static void main(String[] args) throws InterruptedException {
 
-        long startTime = System.currentTimeMillis(); 
-        truckAvailable = trucksInitiate(args);
-
-        if ( truckAvailable == null)
-        {
+        if (args.length == 0 || args.length > 2) {
+            System.out.println("Uso: java TruckOperations <camiones> [viajes]");
             return;
         }
 
-        travels = travelSimulator();
+        int trucks;
+        try {
+            trucks = Integer.parseInt(args[0]);
+            if (trucks <= 0) {
+                System.out.println("La cantidad de camiones debe ser un entero positivo.");
+                return;
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("El argumento <camiones> debe ser un número entero.");
+            return;
+        }
 
-        System.out.println("=========Inicio de operaciones.=========");
-        System.out.println("Cantidad de operaciones: " + travels.length);
+        Integer tripsRequested = null;
+        if (args.length == 2) {
+            try {
+                tripsRequested = Integer.parseInt(args[1]);
+                if (tripsRequested <= 0) {
+                    System.out.println("La cantidad de viajes debe ser un entero positivo.");
+                    return;
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("El argumento [viajes] debe ser un número entero.");
+                return;
+            }
+        }
+
+        long startTime = System.currentTimeMillis();
+        truckAvailable = new Semaphore(trucks);
+        initTruckIds(trucks);
+        travels = simulateTravels(tripsRequested);
+
+        System.out.println("========= Inicio de operaciones =========");
+        System.out.println("Cantidad de viajes a procesar: " + travels.length);
 
         Thread[] threads = processTravels(travels);
+        for (Thread t : threads) t.join();
 
-        waitThreads(threads);
-
-        System.out.println("=========Fin de operaciones.=========");
-
+        System.out.println("========= Fin de operaciones =========");
         printElapsedTime(startTime);
-
     }
 
-    public static void printElapsedTime(long startTime)
-    {
-        long endTime = System.currentTimeMillis();
-        long elapsedMillis = endTime - startTime;
+    private static void initTruckIds(int count) {
+        truckIds = new ArrayBlockingQueue<>(count);
+        for (int i = 1; i <= count; i++) {
+            truckIds.add(i);
+        }
+    }
+
+    private static void printElapsedTime(long startTime) {
+        long elapsedMillis = System.currentTimeMillis() - startTime;
         double elapsedSeconds = elapsedMillis / 1000.0;
-        double simulatedHours = elapsedSeconds;
-        double simulatedDays = simulatedHours / 24.0;
-    
-        System.out.printf("Tiempo total transcurrido: %.2f segundos reales.%n", elapsedSeconds);
-        System.out.printf("Tiempo simulado transcurrido: %.2f horas simuladas.%n", simulatedHours);
-        System.out.printf("Tiempo simulado requerido: %.4f días simulados.%n", simulatedDays);
-    }
-    
-
-    public static void waitThreads(Thread[] threads) throws InterruptedException
-    {
-        for (Thread t : threads)
-        {
-            t.join();
-        }
+        System.out.printf("Tiempo real transcurrido: %.2f s%n", elapsedSeconds);
+        System.out.printf("Tiempo simulado transcurrido: %.2f h%n", elapsedSeconds);
+        System.out.printf("Equivalente simulado: %.4f días%n", elapsedSeconds / 24.0);
     }
 
-    public static Thread[] processTravels(int[] travels) throws InterruptedException
-    {
+    private static Thread[] processTravels(int[] travels) {
         Thread[] threads = new Thread[travels.length];
-        
-        for (int i = 0; i < travels.length; i++)
-        {
-            final int index = i;
-            Thread t = new Thread(() -> 
-            {
-                try
-                {
-                    if (travels[index] == FLOURTRUCK)
-                    {
-                        truckTripFlour();
-                    }
-                    else
-                    {
-                        truckTripCoal();
-                    }
+        for (int i = 0; i < travels.length; i++) {
+            final int type = travels[i];
+            threads[i] = new Thread(() -> {
+                try {
+                    if (type == FLOURTRUCK) truckTripFlour();
+                    else truckTripCoal();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
                 }
-                catch (InterruptedException e)
-                {
-                    e.printStackTrace();
-                }
-            });
-            t.start();
-            threads[i] = t;
+            }, "Trip-" + (i + 1));
+            threads[i].start();
         }
-        
         return threads;
     }
 
-    public static int[] travelSimulator()
-    {
-        Random random = new Random();
-
-        int size = random.nextInt(20) + 1;
-        int[] vector = new int[size];
-
+    private static int[] simulateTravels(Integer total) {
+        Random r = new Random();
+        int size = (total != null) ? total : r.nextInt(20) + 1;
+        int[] v = new int[size];
         for (int i = 0; i < size; i++)
-        {
-            vector[i] = random.nextBoolean() ? FLOURTRUCK : COALTRUCK;
-        }
-
-        return vector;
+            v[i] = r.nextBoolean() ? FLOURTRUCK : COALTRUCK;
+        return v;
     }
 
-    public static Semaphore trucksInitiate(String[] args)
-    {
-        if (args.length != 1)
-        {
-            System.out.println("Uso: java TruckOperations <cantidad_camiones>");
-            return null;
-        }
-
-        int trucks;
-        try
-        {
-            trucks = Integer.parseInt(args[0]);
-        }
-        catch (NumberFormatException e)
-        {
-            System.out.println("El argumento debe ser un número entero.");
-            return null;
-        }
-
-        if(trucks < 0)
-        {
-            System.out.println("¿A donde viste camiones negativos?");
-            return null;
-        }
-
-        if(trucks == 0)
-        {
-            System.out.println("El argumento debe ser mayor a 0.");
-            return null;
-        }
-
-        return new Semaphore(trucks);
+    private static void loadFlour() throws InterruptedException {
+        op(loadFlourSemaphore, 2);
     }
 
-    public static void loadFlour() throws InterruptedException
-    {
-        loadFlourSemaphore.acquire();
-        Thread.sleep(2 * MILLISECONDS);
-        loadFlourSemaphore.release();
+    private static void unloadFlour() throws InterruptedException {
+        op(unloadFlourSemaphore, 2);
     }
 
-    public static void unloadFlour() throws InterruptedException
-    {
-        unloadFlourSemaphore.acquire();
-        Thread.sleep(2 * MILLISECONDS);
-        unloadFlourSemaphore.release();
+    private static void loadCoal() throws InterruptedException {
+        op(loadCoalSemaphore, 2);
     }
 
-    public static void loadCoal() throws InterruptedException
-    {
-        loadCoalSemaphore.acquire();
-        Thread.sleep(2 * MILLISECONDS);
-        loadCoalSemaphore.release();
+    private static void unloadCoal() throws InterruptedException {
+        op(unloadCoalSemaphore, 2);
     }
 
-    public static void unloadCoal() throws InterruptedException
-    {
-        unloadCoalSemaphore.acquire();
-        Thread.sleep(2 * MILLISECONDS);
-        unloadCoalSemaphore.release();
+    private static void loadFuel() throws InterruptedException {
+        op(loadFuelSemaphore, 1);
     }
 
-    public static void loadFuel() throws InterruptedException
-    {
-        loadFuelSemaphore.acquire();
-        Thread.sleep(1 * MILLISECONDS);
-        loadFuelSemaphore.release();
+    private static void op(Semaphore s, int seconds) throws InterruptedException {
+        s.acquire();
+        Thread.sleep(seconds * MILLISECONDS);
+        s.release();
     }
 
-    public static void travelToBA() throws InterruptedException
-    {
+    private static void travelToBA() throws InterruptedException {
+        travelRandom();
+    }
+
+    private static void travelToSE() throws InterruptedException {
+        travelRandom();
+    }
+
+    private static void travelRandom() throws InterruptedException {
         Thread.sleep(ThreadLocalRandom.current().nextInt(18, 25) * MILLISECONDS);
     }
 
-    public static void travelToSE() throws InterruptedException
-    {
-        Thread.sleep(ThreadLocalRandom.current().nextInt(18, 25) * MILLISECONDS);
-    }
-
-    public static void acquireTruck() throws InterruptedException
-    {
+    private static int acquireTruck() throws InterruptedException {
         truckAvailable.acquire();
+        return truckIds.take(); // obtiene un camión real (1, 2, 3, ...)
     }
 
-    public static void releaseTruck()
-    {
+    private static void releaseTruck(int id) throws InterruptedException {
+        truckIds.put(id); // vuelve a ponerlo disponible
         truckAvailable.release();
     }
 
-    public static void truckTripFlour() throws InterruptedException
-    {
-        String threadName = Thread.currentThread().getName();
-        String threadNumber = threadName.replaceAll("\\D+", "") + 1;
-        acquireTruck();
-        System.out.println("[Camión:" + threadNumber + "] tomado.");
+    private static void truckTripFlour() throws InterruptedException {
+        int id = acquireTruck();
+        System.out.println("[Camión " + id + "] tomado.");
         loadFlour();
-        System.out.println("[Camión: "+ threadNumber + "] Harina cargada en BA.");
+        System.out.println("[Camión " + id + "] Harina cargada en BA.");
         travelToSE();
-        System.out.println("[Camión: "+ threadNumber + "] Llegó a SE con harina.");
+        System.out.println("[Camión " + id + "] Llegó a SE con harina.");
         unloadFlour();
-        System.out.println("[Camión: "+ threadNumber + "] Harina descargada en SE.");
+        System.out.println("[Camión " + id + "] Harina descargada en SE.");
         travelToBA();
-        System.out.println("[Camión: "+ threadNumber + "] Regresó a BA.");
-        releaseTruck();
-        System.out.println("[Camión: "+ threadNumber + "] liberado.");
+        System.out.println("[Camión " + id + "] Regresó a BA.");
+        releaseTruck(id);
+        System.out.println("[Camión " + id + "] liberado.");
     }
 
-    public static void truckTripCoal() throws InterruptedException
-    {
-        String threadName = Thread.currentThread().getName();
-        String threadNumber = threadName.replaceAll("\\D+", "");
-        acquireTruck();
-        System.out.println("[Camión:" + threadNumber + "] tomado.");
+    private static void truckTripCoal() throws InterruptedException {
+        int id = acquireTruck();
+        System.out.println("[Camión " + id + "] tomado.");
         travelToSE();
-        System.out.println("[Camión: "+ threadNumber + "] Llegó a SE.");
+        System.out.println("[Camión " + id + "] Llegó a SE.");
         loadCoal();
-        System.out.println("[Camión: "+ threadNumber + "] Carbon cargado en SE.");
+        System.out.println("[Camión " + id + "] Carbón cargado en SE.");
         loadFuel();
-        System.out.println("[Camión: "+ threadNumber + "] Combustible cargado.");
+        System.out.println("[Camión " + id + "] Combustible cargado.");
         travelToBA();
-        System.out.println("[Camión: "+ threadNumber + "] Llegó a BA con carbon.");
-        releaseTruck();
-        System.out.println("[Camión: "+ threadNumber + "] liberado.");
+        System.out.println("[Camión " + id + "] Llegó a BA con carbón.");
+        releaseTruck(id);
+        System.out.println("[Camión " + id + "] liberado.");
     }
 
 }
