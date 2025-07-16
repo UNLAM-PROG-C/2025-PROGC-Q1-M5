@@ -1,0 +1,30 @@
+# Archivos de importación (metadatos generados automáticamente)
+.import/
+*.import
+
+# Carpeta interna de Godot (UIDs, metadata, caché)
+.godot/
+
+# Archivos temporales y de caché
+*.tmp
+*.log
+*.converted.*
+*.translation.metadata
+
+# Configuraciones locales de exportación (opcionales si no hacés export autom.)
+export.cfg
+export_presets.cfg
+
+# Archivos de respaldo del sistema
+*.bak
+*.swp
+*.cfg~*
+*.cfg.save
+.DS_Store
+Thumbs.db
+
+# Ignorar builds locales si usás una carpeta tipo "Ejecutable" para exportados
+/Ejecutable/
+
+# Ignorar archivos temporales de Blender si los editás en Godot
+*.blend1
