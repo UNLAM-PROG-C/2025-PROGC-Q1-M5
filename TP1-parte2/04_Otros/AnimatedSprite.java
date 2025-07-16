@@ -34,7 +34,7 @@ public class AnimatedSprite extends JLabel {
                     if (loop) {
                         currentFrame = 0;
                     } else {
-                        stop();
+                        stop(); // detiene la animación
                         return;
                     }
                 }
@@ -81,8 +81,8 @@ public class AnimatedSprite extends JLabel {
     }
 
     public void destroy() {
-    stop();
-    animationTimer.stop();
-    animationTimer.setRepeats(false);
+    stop();                  // Detiene animación
+    animationTimer.stop();  // Asegura detener Timer
+    animationTimer.setRepeats(false); // Ya no repite más
     }
 }
